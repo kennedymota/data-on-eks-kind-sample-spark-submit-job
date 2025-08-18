@@ -1,38 +1,38 @@
-# Projeto Kubernetes com Kustomize
+# Data on EKS Project with Kind, NGINX, Spark and Portainer
 
-Este projeto contém a configuração de infraestrutura e aplicações utilizando **Kustomize** para orquestração em um cluster **Kubernetes** local com **Kind**.  
-Inclui deploys de serviços como **Spark**, **Portainer**, **Echo Server** e suporte a batch jobs.
+This project contains the infrastructure and application configuration using **Kustomize** for orchestration in a local **Kubernetes** cluster with **Kind**.  
+It includes deployments of services such as **Spark**, **Portainer**, **Echo Server**, and support for batch jobs.
 
 ---
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 kustomize/
-├── apps/                # Aplicações gerenciadas
-│   ├── echo/            # Echo server (deploy + service + kustomization)
+├── apps/                # Managed applications
+│   ├── echo/            # Echo server (deployment + service + kustomization)
 │   ├── spark/           # Apache Spark (master, workers, ingress, statefulset)
-│   ├── portainer/       # Portainer (deploy, pvc, svc, ingress)
-│   └── job-batch/       # Job de batch Spark
+│   ├── portainer/       # Portainer (deployment, pvc, svc, ingress)
+│   └── job-batch/       # Spark batch job
 │
-├── infra/               # Infraestrutura do cluster
+├── infra/               # Cluster infrastructure
 │   ├── nginx/           # Ingress NGINX configs
-│   └── local-path/      # Storage provisioner local
+│   └── local-path/      # Local storage provisioner
 │
-├── ingress/             # Ingress para os serviços
+├── ingress/             # Service ingress configurations
 │   ├── echo.ing.yaml
 │   ├── portainer.ing.yaml
 │   └── spark.ing.yaml
 │
-├── scripts/             # Automação
-│   ├── apply-infra.sh   # Sobe infraestrutura (Kind + kustomize infra)
-│   ├── apply-apps.sh    # Aplica as aplicações
-│   └── kind-config.yaml # Configuração base do cluster Kind
+├── scripts/             # Automation
+│   ├── apply-infra.sh   # Sets up infrastructure (Kind + kustomize infra)
+│   ├── apply-apps.sh    # Deploys applications
+│   └── kind-config.yaml # Base Kind cluster configuration
 ```
 
 ---
 
-## Pré-requisitos
+## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/)  
 - [Kind](https://kind.sigs.k8s.io/)  
@@ -41,37 +41,36 @@ kustomize/
 
 ---
 
-## Como iniciar
+## Getting Started
 
-### 1. Criar e configurar o cluster
+### 1. Create and configure the cluster
 ```bash
 cd kustomize/scripts
 ./apply-infra.sh
 ```
-O script cria um cluster **Kind** e aplica os manifests de infraestrutura (NGINX ingress + Local Path Provisioner).
+This script creates a **Kind** cluster and applies the infrastructure manifests (NGINX ingress + Local Path Provisioner).
 
-### 2. Aplicar as aplicações
+### 2. Deploy the applications
 ```bash
 ./apply-apps.sh
 ```
-Este script aplica os manifests de **Spark**, **Echo Server** e **Portainer**.
+This script applies the manifests for **Spark**, **Echo Server**, and **Portainer**.
 
 ---
 
-## Serviços disponíveis
+## Available Services
 
-- **Portainer**: Gerenciamento de containers  
+- **Portainer**: Container management  
   - Ingress: `http://localhost/portainer`
 
-- **Echo Server**: Teste de requests HTTP  
+- **Echo Server**: HTTP request test  
   - Ingress: `http://localhost/echo`
 
-- **Apache Spark**: Interface de gerenciamento de jobs distribuídos  
+- **Apache Spark**: Distributed jobs management UI  
   - Ingress: `http://localhost/spark`
 
-
-Para facilitar o acesso, você pode mapear domínios locais no arquivo `/etc/hosts`.  
-Exemplo de configuração (assumindo que o ingress controller está em `127.0.0.1`):
+To simplify access, you can map local domains in the `/etc/hosts` file.  
+Example configuration (assuming the ingress controller is running on `127.0.0.1`):
 
 ```bash
 sudo nano /etc/hosts
@@ -79,12 +78,11 @@ sudo nano /etc/hosts
 127.0.0.1   portainer.local
 127.0.0.1   echo.local
 127.0.0.1   spark.local
+```
 
 ---
 
-## Notas adicionais
+## Additional Notes
 
-- Todos os ingressos estão configurados via **NGINX Controller**.  
-- O `workers-statefulset.yaml` permite escalabilidade de **Spark Workers** (não utilizado).
-
----
+- All ingresses are configured via the **NGINX Controller**.  
+- The `workers-statefulset.yaml` allows scalability of **Spark Workers** (not currently used).
