@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-worker
+  labels: { app: spark, role: worker }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: spark, role: worker } }
+  template:
+    metadata: { labels: { app: spark, role: worker } }
+    spec:
+      containers:
+        - name: worker
+          image: apache/spark:3.5.1
+          env:
+            - { name: SPARK_NO_DAEMONIZE, value: "1" }
+          command: ["/bin/bash","-lc"]
+          args:
+            - |
+              exec /opt/spark/sbin/start-worker.sh spark://spark-master-svc:7077
+          ports:
+            - { containerPort: 8081 }

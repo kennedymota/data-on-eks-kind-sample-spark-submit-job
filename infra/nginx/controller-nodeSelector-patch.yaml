@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+spec:
+  template:
+    spec:
+      # mantém a seleção por label usada pelo manifesto oficial...
+      nodeSelector:
+        ingress-ready: "true"
+        # ...e força explicitamente o nó control-plane:
+        kubernetes.io/hostname: "my-cluster-control-plane"

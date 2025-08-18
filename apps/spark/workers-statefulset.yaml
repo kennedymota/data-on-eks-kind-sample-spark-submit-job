@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: spark
+---
+# Headless Service para DNS estável dos pods do StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-worker-hl
+  namespace: spark
+  labels: { app: spark, role: worker }
+spec:
+  clusterIP: None
+  selector: { app: spark, role: worker }
+  ports:
+    - name: ui
+      port: 8081
+      targetPort: 8081
+---
+# StatefulSet de workers (2 réplicas)
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: spark-worker
+  namespace: spark
+  labels: { app: spark, role: worker }
+spec:
+  serviceName: spark-worker-hl
+  replicas: 2
+  selector:
+    matchLabels: { app: spark, role: worker }
+  template:
+    metadata:
+      labels: { app: spark, role: worker }
+    spec:
+      containers:
+        - name: worker
+          image: apache/spark:3.5.1
+          env:
+            - name: SPARK_NO_DAEMONIZE
+              value: "1"
+          command: ["/bin/bash","-lc"]
+          args:
+            - >
+              exec /opt/spark/sbin/start-worker.sh
+              spark://spark-master-svc:7077
+          ports:
+            - name: ui
+              containerPort: 8081
+---
+# Service fixo para spark-worker-0
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-worker-0
+  namespace: spark
+spec:
+  selector:
+    app: spark
+    role: worker
+    statefulset.kubernetes.io/pod-name: spark-worker-0
+  ports:
+    - name: ui
+      port: 8081
+      targetPort: 8081
+---
+# Service fixo para spark-worker-1
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-worker-1
+  namespace: spark
+spec:
+  selector:
+    app: spark
+    role: worker
+    statefulset.kubernetes.io/pod-name: spark-worker-1
+  ports:
+    - name: ui
+      port: 8081
+      targetPort: 8081
+---
+# Ingress por pod: worker-0.spark.local -> spark-worker-0:8081
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: spark-worker-0-ui
+  namespace: spark
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: worker-0.spark.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: spark-worker-0
+                port:
+                  number: 8081
+---
+# Ingress por pod: worker-1.spark.local -> spark-worker-1:8081
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: spark-worker-1-ui
+  namespace: spark
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: worker-1.spark.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: spark-worker-1
+                port:
+                  number: 8081

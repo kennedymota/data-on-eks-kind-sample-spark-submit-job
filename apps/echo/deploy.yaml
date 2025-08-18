@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Namespace
+metadata: { name: apps }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo
+  labels: { app: echo }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: echo } }
+  template:
+    metadata: { labels: { app: echo } }
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector: { matchLabels: { app: echo } }
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: echo
+          image: ealen/echo-server:0.7.0
+          ports: [{ containerPort: 80 }]
