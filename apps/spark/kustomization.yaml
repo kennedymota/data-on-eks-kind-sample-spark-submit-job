@@ -5,4 +5,6 @@ resources:
   - master-deploy.yaml
   - master-svc.yaml
   - worker-deploy.yaml
-  - ingress.yaml
+  - ingress-master.yaml
+  - ingress-workers.yaml
+  - config-map-headers.yaml

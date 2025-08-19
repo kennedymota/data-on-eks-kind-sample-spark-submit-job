@@ -14,9 +14,28 @@ spec:
           image: apache/spark:3.5.1
           env:
             - { name: SPARK_NO_DAEMONIZE, value: "1" }
+            - name: POD_NAME
+              valueFrom: { fieldRef: { fieldPath: metadata.name } }
+            - name: SPARK_DAEMON_JAVA_OPTS
+              value: >
+                -Dspark.ui.reverseProxy=true
+                -Dspark.ui.reverseProxyUrl=http://spark.local/worker/$(POD_NAME)/
+            - name: SPARK_LOCAL_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SPARK_LOCAL_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SPARK_PUBLIC_DNS
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SPARK_WORKER_WEBUI_PORT
+              value: "8081"
           command: ["/bin/bash","-lc"]
           args:
-            - |
-              exec /opt/spark/sbin/start-worker.sh spark://spark-master-svc:7077
+            - exec /opt/spark/sbin/start-worker.sh spark://spark-master-svc:7077
           ports:
             - { containerPort: 8081 }

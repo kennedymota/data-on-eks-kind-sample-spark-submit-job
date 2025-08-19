@@ -11,3 +11,10 @@ patches:
       kind: Deployment
       name: ingress-nginx-controller
       namespace: ingress-nginx
+
+  - path: controller-configmap-patch.yaml
+    target:
+      version: v1
+      kind: ConfigMap
+      name: ingress-nginx-controller
+      namespace: ingress-nginx

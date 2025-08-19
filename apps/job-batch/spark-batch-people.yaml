@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: spark-sql-show-4-
+  namespace: spark
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: submit
+          image: apache/spark:3.5.1
+          command: ["/opt/spark/bin/spark-submit"]
+          args:
+            - --master
+            - spark://spark-master-svc:7077
+            - --deploy-mode
+            - cluster
+            - --class
+            - org.apache.spark.examples.sql.SparkSQLExample
+            - --files
+            - /opt/spark/examples/src/main/resources/people.json
+            - --conf
+            - spark.executor.instances=2
+            - --conf
+            - spark.executor.cores=1
+            - --conf
+            - spark.executor.memory=512m
+            - --conf
+            - spark.driver.cores=1
+            - --conf
+            - spark.driver.memory=512m
+            - --conf
+            - spark.driver.bindAddress=0.0.0.0
+            - --conf
+            - spark.dynamicAllocation.enabled=false
+            - --conf
+            - spark.network.timeout=120s
+            - --conf
+            - spark.executor.heartbeatInterval=20s
+            - --conf
+            - spark.executor.port=39000
+            - --conf
+            - spark.blockManager.port=39010
+            - --conf
+            - spark.driver.port=39020
+            # opcional: logs de histórico se tiver armazenamento compartilhado (ex.: S3/PVC)
+            # - --conf
+            # - spark.eventLog.enabled=true
+            # - --conf
+            # - spark.eventLog.dir=s3a://<bucket>/spark-events
+            - /opt/spark/examples/jars/spark-examples_2.12-3.5.1.jar
+            - people.json
+          # limites só para o POD do submit (não afeta executores no Standalone)
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
