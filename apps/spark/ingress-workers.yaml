@@ -1,25 +1,26 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: spark-worker-proxy
+  name: spark-ui-worker-bypass
   namespace: spark
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/proxy-set-headers: "spark/spark-proxy-headers"
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      resolver kube-dns.kube-system.svc.cluster.local valid=10s;
-      if ($request_uri ~ "^/worker/([-a-z0-9]+)(/.*)$") {
-        set $pod $1; set $p $2;
-        proxy_pass http://$pod.spark.svc.cluster.local:8081$p;
-      }
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 spec:
   ingressClassName: nginx
   rules:
   - host: spark.local
     http:
       paths:
-      - path: /worker(/|$)(.*)
+      # clica a partir da página do Worker UI
+      - path: /proxy/(worker-[^/]+)$
         pathType: ImplementationSpecific
         backend:
-          service: { name: spark-master-svc, port: { number: 8080 } } # placeholder
+          service: { name: spark-worker-svc, port: { number: 8081 } }
+      # 2b) subpaths (logPage, etc) → preserva resto
+      - path: /proxy/(worker-[^/]+)/(.+)
+        pathType: ImplementationSpecific
+        backend:
+          service: { name: spark-worker-svc, port: { number: 8081 } }

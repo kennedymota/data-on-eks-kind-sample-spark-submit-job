@@ -24,7 +24,7 @@ spec:
             - name: SPARK_DAEMON_JAVA_OPTS
               value: >
                 -Dspark.ui.reverseProxy=true
-                -Dspark.ui.reverseProxyUrl=http://spark.local/
+                -Dspark.ui.proxyRedirectUri=http://spark.local
             - name: POD_NAME
               valueFrom: { fieldRef: { fieldPath: metadata.name } }
             - name: SPARK_PUBLIC_DNS

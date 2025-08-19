@@ -3,8 +3,7 @@ kind: Kustomization
 namespace: spark
 resources:
   - master-deploy.yaml
-  - master-svc.yaml
+  - services.yaml
   - worker-deploy.yaml
   - ingress-master.yaml
   - ingress-workers.yaml
-  - config-map-headers.yaml

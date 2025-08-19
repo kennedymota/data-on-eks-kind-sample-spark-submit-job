@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: spark-worker
+  namespace: spark
   labels: { app: spark, role: worker }
 spec:
   replicas: 2
@@ -14,28 +15,18 @@ spec:
           image: apache/spark:3.5.1
           env:
             - { name: SPARK_NO_DAEMONIZE, value: "1" }
-            - name: POD_NAME
-              valueFrom: { fieldRef: { fieldPath: metadata.name } }
             - name: SPARK_DAEMON_JAVA_OPTS
               value: >
                 -Dspark.ui.reverseProxy=true
-                -Dspark.ui.reverseProxyUrl=http://spark.local/worker/$(POD_NAME)/
+                -Dspark.ui.proxyRedirectUri=http://spark.local/proxy/$(POD_NAME)
             - name: SPARK_LOCAL_HOSTNAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
+              valueFrom: { fieldRef: { fieldPath: status.podIP } }
             - name: SPARK_LOCAL_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
-            - name: SPARK_PUBLIC_DNS
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
-            - name: SPARK_WORKER_WEBUI_PORT
-              value: "8081"
+              valueFrom: { fieldRef: { fieldPath: status.podIP } }
+            - { name: SPARK_PUBLIC_DNS, value: "spark.local" }
+            - { name: SPARK_WORKER_WEBUI_HOST, value: "0.0.0.0" }
+            - { name: SPARK_WORKER_WEBUI_PORT, value: "8081" }
           command: ["/bin/bash","-lc"]
-          args:
-            - exec /opt/spark/sbin/start-worker.sh spark://spark-master-svc:7077
+          args: [ "exec /opt/spark/sbin/start-worker.sh spark://spark-master-svc:7077" ]
           ports:
-            - { containerPort: 8081 }
+            - { containerPort: 8081, name: ui }

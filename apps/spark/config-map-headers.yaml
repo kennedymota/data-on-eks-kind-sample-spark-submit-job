@@ -8,4 +8,6 @@ data:
   X-Forwarded-Proto: "$scheme"
   X-Forwarded-For: "$remote_addr"
   X-Forwarded-Port: "$server_port"
+  X-Forwarded-Host: "spark.local"
+  X-Forwarded-Prefix: "/"
 
